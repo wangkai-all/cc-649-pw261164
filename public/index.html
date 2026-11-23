@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>销售立方表</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>销售立方表</h1>
+  <div class="header-meta">
+    <span id="active-version" class="pill">…</span>
+    <span id="build-status" class="pill muted">…</span>
+    <span id="sales-total" class="pill muted">…</span>
+  </div>
+</header>
+
+<main>
+  <section class="card" id="versions-panel">
+    <h2>版本与分组配置</h2>
+    <p class="hint">每个版本维护一组 GROUPING SETS；被汇总掉的维度以分组标记保存，与真实空值严格区分。
+       调整分组组合 → 构建新版本 → 切换；旧版本随即冻结，不再混入新数据。</p>
+    <div id="version-list"></div>
+    <details class="new-version">
+      <summary>新建版本（选择分组集）</summary>
+      <div id="mask-checks" class="mask-checks"></div>
+      <button id="btn-build" class="primary">构建新版本</button>
+      <span class="hint">构建期间写操作暂禁（保证快照一致），完成后出现“切换”按钮。</span>
+    </details>
+  </section>
+
+  <section class="card" id="cube-panel">
+    <h2>立方体浏览 <span id="cube-version-note" class="hint"></span></h2>
+    <div id="mask-tabs" class="tabs"></div>
+    <div class="legend">
+      图例：
+      <span class="tag grouped">（全部）</span> 该维度已被汇总（分组标记=1）
+      <span class="tag null">∅ 空值</span> 真实空值（分组标记=0，值为 NULL）
+      <span class="tag literal">全部</span> 真实维度值，恰好叫“全部”
+    </div>
+    <div class="table-wrap">
+      <table id="cube-table">
+        <thead><tr>
+          <th>地区</th><th>渠道</th><th>类别</th>
+          <th class="num">销售笔数</th><th class="num">非空金额笔数</th>
+          <th class="num">金额合计(元)</th><th class="num">均值(元)</th><th></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="drill-panel">
+    <h2>下钻来源记录</h2>
+    <div id="drill-desc" class="hint">点击立方体某行的“下钻”查看来源销售记录。</div>
+    <div class="table-wrap">
+      <table id="drill-table">
+        <thead><tr>
+          <th class="num">ID</th><th>地区</th><th>渠道</th><th>类别</th>
+          <th class="num">金额(元)</th><th>更新时间</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="sales-panel">
+    <h2>销售明细 <span class="hint">（增、改、撤销、删除都会增量同步到所有受影响粒度）</span></h2>
+    <form id="add-form" class="add-form">
+      <input name="region" placeholder="地区（留空=NULL）">
+      <input name="channel" placeholder="渠道（留空=NULL）">
+      <input name="category" placeholder="类别（留空=NULL）">
+      <input name="amount" placeholder="金额(元，留空=NULL)" inputmode="decimal">
+      <button type="submit" class="primary">新增销售</button>
+    </form>
+    <div class="table-wrap tall">
+      <table id="sales-table">
+        <thead><tr>
+          <th class="num">ID</th><th>地区</th><th>渠道</th><th>类别</th>
+          <th class="num">金额(元)</th><th>状态</th><th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="verify-panel">
+    <h2>一致性核对</h2>
+    <p class="hint">在同一事务快照上直接执行分组查询（等价 GROUPING SETS），逐格子比对当前版本。</p>
+    <button id="btn-verify" class="primary">核对当前活动版本</button>
+    <div id="verify-result"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
